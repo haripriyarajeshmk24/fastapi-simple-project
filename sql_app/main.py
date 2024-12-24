@@ -63,3 +63,7 @@ def delete_user_item(user_id: int, item_id: int, db: Session = Depends(get_db)):
 @app.put("/users/{user_id}", response_model=schemas.User)
 def edit_user_status(user_id: int, db: Session = Depends(get_db)):
     return crud.edit_user_status(db=db, user_id=user_id)
+
+@app.put("/users/{user_id}/items/{item_id}/", response_model=schemas.Item)
+def edit_item_description(user_id: int, item_id: int, db: Session = Depends(get_db)):
+    return crud.edit_item_description(db=db, item_id=item_id, user_id=user_id)

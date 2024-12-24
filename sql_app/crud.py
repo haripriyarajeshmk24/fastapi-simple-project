@@ -70,3 +70,16 @@ def edit_user_status(db: Session, user_id: int):
     db_user.is_active = False
     db.commit()
     return db_user
+
+
+def edit_item_description(db: Session, user_id: int, item_id: int):
+    db_item = (
+        db.query(models.Item)
+        .filter(models.Item.id == item_id, models.Item.owner_id == user_id)
+        .first()
+    )
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found or access denied")
+    db_item.description = "Description Changed"
+    db.commit()
+    return db_item

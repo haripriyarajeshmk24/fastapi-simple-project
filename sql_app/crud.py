@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from fastapi import Depends, FastAPI, HTTPException
 
 from . import models, schemas
 
@@ -27,6 +28,45 @@ def get_items(db:Session, skip:int = 0, limit: int =100):
 
 def create_user_item(db:Session, item:schemas.ItemCreate, user_id:int):
     db_item = models.Item(**item.dict(), owner_id=user_id)
+    print(db_item, "db_item")
     db.add(db_item)
+    print("add successful")
     db.commit()
-    db.refresh()
+    print("commit successful")
+    db.refresh(db_item)
+    return db_item
+
+
+def delete_user(db:Session, user:int):
+    db_item = db.query(models.User).filter(models.User.id == user).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(db_item)
+    db.commit()
+    return db_item
+
+
+def delete_user_item(db: Session, item_id: int, user_id: int):
+    db_item = (
+        db.query(models.Item)
+        .filter(models.Item.id == item_id, models.Item.owner_id == user_id)
+        .first()
+    )
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found or access denied")
+    db.delete(db_item)
+    db.commit()
+    return db_item
+
+
+def edit_user_status(db: Session, user_id: int):
+    db_user = (
+        db.query(models.User)
+        .filter(models.User.id == user_id)
+        .first()
+    )
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db_user.is_active = False
+    db.commit()
+    return db_user
